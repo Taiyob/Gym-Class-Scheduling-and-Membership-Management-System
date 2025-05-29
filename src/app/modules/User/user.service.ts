@@ -247,6 +247,7 @@ const updateMyProfile = async (
   const existingUser = await prisma.user.findUniqueOrThrow({
     where: {
       email: user?.email,
+      role: UserRole.TRAINEE,
       status: UserStatus.ACTIVE,
     },
     include: {

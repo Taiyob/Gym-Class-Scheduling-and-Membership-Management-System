@@ -3,7 +3,6 @@ import catchAsync from "../../../shared/catchAsync";
 import { ScheduleService } from "./schedule.service";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
-import pick from "../../../shared/pick";
 import { IAuthUser } from "../../interfaces/common";
 
 const createScheduleIntoDB = catchAsync(
@@ -106,7 +105,6 @@ export const ScheduleController = {
   createScheduleIntoDB,
   getMySchedules,
   getAllSchedules,
-  //getAllScheduleFromDB,
   getSingleScheduleByIdFromDB,
   deleteScheduleByIdFromDB,
 };

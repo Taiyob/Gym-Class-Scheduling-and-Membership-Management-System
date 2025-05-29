@@ -13,4 +13,10 @@ route.get(
   BookingController.getMyUpcomingBookings
 );
 
+route.delete(
+  "/:bookingId",
+  auth(UserRole.TRAINEE),
+  BookingController.cancelBooking
+);
+
 export const BookingRoute = route;

@@ -98,4 +98,48 @@ const getUpcomingBookings = async (user: IAuthUser): Promise<Booking[]> => {
   return bookings;
 };
 
-export const BookingService = { bookSchedule, getUpcomingBookings };
+const cancelBooking = async (
+  user: IAuthUser,
+  bookingId: string
+): Promise<Booking> => {
+  const existingBooking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { schedule: true },
+  });
+
+  if (!existingBooking) {
+    throw new CustomApiError(httpStatus.NOT_FOUND, "Booking not found.");
+  }
+
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+    },
+  });
+
+  if (existingBooking.userId !== userData.id) {
+    throw new CustomApiError(
+      httpStatus.FORBIDDEN,
+      "Unauthorized to cancel this booking."
+    );
+  }
+
+  if (new Date(existingBooking.schedule.startDateTime) <= new Date()) {
+    throw new CustomApiError(
+      httpStatus.BAD_REQUEST,
+      "Cannot cancel a class that has already started."
+    );
+  }
+
+  const cancelledBooking = await prisma.booking.delete({
+    where: { id: bookingId },
+  });
+
+  return cancelledBooking;
+};
+
+export const BookingService = {
+  bookSchedule,
+  getUpcomingBookings,
+  cancelBooking,
+};
