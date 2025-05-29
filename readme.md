@@ -421,70 +421,33 @@ Use the following credentials to access the system as an Admin:
 Email : admin@gmail.com
 Password : 123456
 
-🚀 Instructions to Run Locally
-Follow the steps below to set up the project in your local environment:
+<details> <summary><strong>🚀 Instructions to Run Locally</strong></summary> <br/>
+Follow the steps below to set up and run the project in your local development environment.
 
 📁 1. Clone the Repository
-bash
-Copy
-Edit
 git clone https://github.com/your-username/your-repo-name.git
 cd your-repo-name
+
 📦 2. Install Dependencies
-Ensure you have Node.js (>=18.x) and npm installed.
-
-bash
-Copy
-Edit
+Make sure Node.js (v18 or higher) and npm are installed.
 npm install
-⚙️ 3. Configure Environment Variables
+
+⚙️ 3. Set Environment Variables
 Create a .env file in the root directory and add the following:
-
-env
-Copy
-Edit
-DATABASE_URL="your_postgresql_database_url"
-DIRECT_URL="your_postgresql_direct_url"
-JWT_SECRET="your_secure_jwt_secret"
-💡 You can use services like:
-
-Railway
-
-Render
-
-Supabase
-to get PostgreSQL URLs easily.
+DATABASE_URL=your_postgresql_database_url
+DIRECT_URL=your_postgresql_direct_url
+JWT_SECRET=your_secure_jwt_secret
+💡 Tip: Use free PostgreSQL hosting from Railway, Render, or Supabase
 
 🛠️ 4. Set Up the Database
-Generate the Prisma client and run the initial migration:
-
-bash
-Copy
-Edit
+Run the following commands to generate the Prisma client and apply migrations:
 npx prisma generate
 npx prisma migrate dev --name init
-Optional: seed initial data
-
-bash
-Copy
-Edit
+Optional (for seeding data):
 npx prisma db seed
+
 ▶️ 5. Start the Development Server
-bash
-Copy
-Edit
 npm run dev
-Server will start at:
+Server will be running at: http://localhost:5000
 
-arduino
-Copy
-Edit
-http://localhost:5000
-🔐 Admin Credentials
-Use the following credentials to log in as an Admin:
-
-makefile
-Copy
-Edit
-Email: admin@gmail.com  
-Password: 123456
+</details>
