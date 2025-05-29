@@ -1,81 +1,90 @@
-// import { Prisma, Schedule } from "@prisma/client";
-// import prisma from "../../../shared/prisma";
-// import { addHours, addMinutes, format } from "date-fns";
-// import { ISchedule, IScheduleFilterRequest } from "./schedule.interface";
-// import { IPaginationOptions } from "../../interfaces/pagination";
-// import calculatePagination from "../../../helper/pagination";
-// import { IAuthUser } from "../../interfaces/common";
+import { Prisma, Schedule } from "@prisma/client";
+import prisma from "../../../shared/prisma";
+import { addHours, addMinutes, format } from "date-fns";
+import { ISchedule, IScheduleFilterRequest } from "./schedule.interface";
+import { IPaginationOptions } from "../../interfaces/pagination";
+import calculatePagination from "../../../helper/pagination";
+import { IAuthUser } from "../../interfaces/common";
+import CustomApiError from "../../errors/customApiError";
+import httpStatus from "http-status";
 
 // const convertDateTime = async (date: Date) => {
 //   const offset = date.getTimezoneOffset() * 60000;
 //   return new Date(date.getTime() + offset);
 // };
 
-// const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
-//   const { startDate, startTime, endDate, endTime } = payload;
-//   const intervalTime = 30;
-//   const schedules = [];
+const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
+  const { startDate, startTime, endDate, endTime, trainerId } = payload;
 
-//   const currentDate = new Date(startDate);
-//   const lastDate = new Date(endDate);
+  if (!trainerId) {
+    throw new CustomApiError(httpStatus.BAD_REQUEST, "Trainer ID is required!");
+  }
 
-//   while (currentDate <= lastDate) {
-//     const startDateTime = new Date(
-//       addMinutes(
-//         addHours(
-//           `${format(currentDate, "yyyy-MM-dd")}`,
-//           Number(startTime.split(":")[0])
-//         ),
-//         Number(startTime.split(":")[1])
-//       )
-//     );
+  const intervalTime = 30;
+  const schedules = [];
 
-//     const endDateTime = new Date(
-//       addMinutes(
-//         addHours(
-//           `${format(currentDate, "yyyy-MM-dd")}`,
-//           Number(endTime.split(":")[0])
-//         ),
-//         Number(endTime.split(":")[1])
-//       )
-//     );
+  const currentDate = new Date(startDate);
+  const lastDate = new Date(endDate);
 
-//     while (startDateTime < endDateTime) {
-//       // const scheduleDate = {
-//       //   startDateTime: startDateTime,
-//       //   endDateTime: addMinutes(startDateTime, intervalTime),
-//       // };
+  while (currentDate <= lastDate) {
+    const startDateTime = new Date(
+      addMinutes(
+        addHours(
+          `${format(currentDate, "yyyy-MM-dd")}`,
+          Number(startTime.split(":")[0])
+        ),
+        Number(startTime.split(":")[1])
+      )
+    );
 
-//       const s = await convertDateTime(startDateTime);
-//       const e = await convertDateTime(addMinutes(startDateTime, intervalTime));
+    const endDateTime = new Date(
+      addMinutes(
+        addHours(
+          `${format(currentDate, "yyyy-MM-dd")}`,
+          Number(endTime.split(":")[0])
+        ),
+        Number(endTime.split(":")[1])
+      )
+    );
 
-//       const scheduleDate = {
-//         startDateTime: s,
-//         endDateTime: e,
-//       };
+    while (startDateTime < endDateTime) {
+      const scheduleDate = {
+        startDateTime: startDateTime,
+        endDateTime: addMinutes(startDateTime, intervalTime),
+        trainerId,
+      };
 
-//       const existingSchedule = await prisma.schedule.findFirst({
-//         where: {
-//           startDateTime: scheduleDate.startDateTime,
-//           endDateTime: scheduleDate.endDateTime,
-//         },
-//       });
+      //   const s = await convertDateTime(startDateTime);
+      //   const e = await convertDateTime(addMinutes(startDateTime, intervalTime));
 
-//       if (!existingSchedule) {
-//         const result = await prisma.schedule.create({
-//           data: scheduleDate,
-//         });
+      //   const scheduleDate = {
+      //     startDateTime: s,
+      //     endDateTime: e,
+      //   };
 
-//         schedules.push(result);
-//       }
+      const existingSchedule = await prisma.schedule.findFirst({
+        where: {
+          startDateTime: scheduleDate.startDateTime,
+          endDateTime: scheduleDate.endDateTime,
+          trainerId: trainerId,
+        },
+      });
 
-//       startDateTime.setMinutes(startDateTime.getMinutes() + intervalTime);
-//     }
-//     currentDate.setDate(currentDate.getDate() + 1);
-//   }
+      if (!existingSchedule) {
+        const result = await prisma.schedule.create({
+          data: scheduleDate,
+        });
 
-//   return schedules;
-// };
+        schedules.push(result);
+      }
+
+      startDateTime.setMinutes(startDateTime.getMinutes() + intervalTime);
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return schedules;
+};
 
 // const getAllSchedule = async (
 //   params: IScheduleFilterRequest,
@@ -181,30 +190,30 @@
 //   };
 // };
 
-// const getSingleScheduleById = async (id: string): Promise<Schedule | null> => {
-//   const result = await prisma.schedule.findUniqueOrThrow({
-//     where: {
-//       id: id,
-//     },
-//   });
+const getSingleScheduleById = async (id: string): Promise<Schedule | null> => {
+  const result = await prisma.schedule.findUniqueOrThrow({
+    where: {
+      id: id,
+    },
+  });
 
-//   return result;
-// };
+  return result;
+};
 
-// const deleteScheduleById = async (id: string): Promise<Schedule> => {
-//   const result = await prisma.schedule.delete({
-//     where: {
-//       id: id,
-//     },
-//   });
-//   //console.log(result?.startDateTime.getHours() + ":" + result?.startDateTime.getMinutes())
-//   //console.log(result?.startDateTime.getUTCHours() + ":" + result?.startDateTime.getUTCMinutes())
-//   return result;
-// };
+const deleteScheduleById = async (id: string): Promise<Schedule> => {
+  const result = await prisma.schedule.delete({
+    where: {
+      id: id,
+    },
+  });
+  //console.log(result?.startDateTime.getHours() + ":" + result?.startDateTime.getMinutes())
+  //console.log(result?.startDateTime.getUTCHours() + ":" + result?.startDateTime.getUTCMinutes())
+  return result;
+};
 
-// export const ScheduleService = {
-//   createSchedule,
-//   getAllSchedule,
-//   getSingleScheduleById,
-//   deleteScheduleById,
-// };
+export const ScheduleService = {
+  createSchedule,
+  //getAllSchedule,
+  getSingleScheduleById,
+  deleteScheduleById,
+};

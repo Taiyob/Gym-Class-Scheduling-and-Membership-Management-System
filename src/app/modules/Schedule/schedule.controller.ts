@@ -1,23 +1,23 @@
-// import { NextFunction, Request, Response } from "express";
-// import catchAsync from "../../../shared/catchAsync";
-// import { ScheduleService } from "./schedule.service";
-// import sendResponse from "../../../shared/sendResponse";
-// import httpStatus from "http-status";
-// import pick from "../../../shared/pick";
-// import { IAuthUser } from "../../interfaces/common";
+import { NextFunction, Request, Response } from "express";
+import catchAsync from "../../../shared/catchAsync";
+import { ScheduleService } from "./schedule.service";
+import sendResponse from "../../../shared/sendResponse";
+import httpStatus from "http-status";
+import pick from "../../../shared/pick";
+import { IAuthUser } from "../../interfaces/common";
 
-// const createScheduleIntoDB = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const result = await ScheduleService.createSchedule(req.body);
+const createScheduleIntoDB = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await ScheduleService.createSchedule(req.body);
 
-//     sendResponse(res, {
-//       statusCode: httpStatus.OK,
-//       success: true,
-//       message: "Schedule created successfully!!!",
-//       data: result,
-//     });
-//   }
-// );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Schedule created successfully!!!",
+      data: result,
+    });
+  }
+);
 
 // const getAllScheduleFromDB = catchAsync(
 //   async (
@@ -46,37 +46,37 @@
 //   }
 // );
 
-// const getSingleScheduleByIdFromDB = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const { id } = req.params;
-//     const result = await ScheduleService.getSingleScheduleById(id);
+const getSingleScheduleByIdFromDB = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const result = await ScheduleService.getSingleScheduleById(id);
 
-//     sendResponse(res, {
-//       statusCode: httpStatus.OK,
-//       success: true,
-//       message: "Single schedule fetched successfully!!!",
-//       data: result,
-//     });
-//   }
-// );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Single schedule fetched successfully!!!",
+      data: result,
+    });
+  }
+);
 
-// const deleteScheduleByIdFromDB = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const { id } = req.params;
-//     const result = await ScheduleService.deleteScheduleById(id);
+const deleteScheduleByIdFromDB = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const result = await ScheduleService.deleteScheduleById(id);
 
-//     sendResponse(res, {
-//       statusCode: httpStatus.OK,
-//       success: true,
-//       message: "Deleted successfully!!!",
-//       data: result,
-//     });
-//   }
-// );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Deleted successfully!!!",
+      data: result,
+    });
+  }
+);
 
-// export const ScheduleController = {
-//   createScheduleIntoDB,
-//   getAllScheduleFromDB,
-//   getSingleScheduleByIdFromDB,
-//   deleteScheduleByIdFromDB,
-// };
+export const ScheduleController = {
+  createScheduleIntoDB,
+  //getAllScheduleFromDB,
+  getSingleScheduleByIdFromDB,
+  deleteScheduleByIdFromDB,
+};

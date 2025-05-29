@@ -6,6 +6,7 @@ import calculatePagination from "../../../helper/pagination";
 import { userSearchableFileds } from "./user.constant";
 import CustomApiError from "../../errors/customApiError";
 import httpStatus from "http-status";
+import { IAuthUser } from "../../interfaces/common";
 
 const createUser = async (payload: any): Promise<User> => {
   const email = payload.email;
@@ -28,6 +29,61 @@ const createUser = async (payload: any): Promise<User> => {
     email: email,
     password: hashedPassword,
     role: UserRole.TRAINEE,
+  };
+
+  const result = await prisma.$transaction(async (txClient) => {
+    const newUser = await txClient.user.create({
+      data: userData,
+    });
+
+    const profileData = {
+      userId: newUser.id,
+      name: payload.profile.name,
+      age: payload.profile.age,
+      phone: payload.profile.phone,
+      gender: payload.profile.gender,
+    };
+
+    await txClient.profile.create({
+      data: profileData,
+    });
+
+    return newUser;
+  });
+
+  const responseData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: result.email,
+    },
+    include: {
+      profile: true,
+    },
+  });
+
+  return responseData;
+};
+
+const createTrainer = async (payload: any): Promise<User> => {
+  const email = payload.email;
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+
+  if (existingUser) {
+    throw new CustomApiError(
+      httpStatus.CONFLICT,
+      "User with this email already exists!"
+    );
+  }
+
+  const hashedPassword: string = await bcrypt.hash(payload.password, 12);
+
+  const userData = {
+    email: email,
+    password: hashedPassword,
+    role: UserRole.TRAINER,
   };
 
   const result = await prisma.$transaction(async (txClient) => {
@@ -122,10 +178,6 @@ const getAllUser = async (params: any, options: IPaginationOptions) => {
       createdAt: true,
       updatedAt: true,
     },
-    // include: {
-    //   admin: true,
-    //   doctor: true
-    // }
   });
 
   const total = await prisma.user.count({
@@ -161,105 +213,87 @@ const updateUserStatus = async (id: string, data: { status: UserStatus }) => {
   return result;
 };
 
-// const getMyProfile = async (user: IAuthUser) => {
-//   const userInfo = await prisma.user.findUniqueOrThrow({
-//     where: {
-//       email: user?.email,
-//     },
-//     select: {
-//       id: true,
-//       email: true,
-//       needPasswordChange: true,
-//       role: true,
-//       status: true,
-//     },
-//   });
+const getMyProfile = async (user: IAuthUser) => {
+  const myprofileInfo = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+    },
+    select: {
+      id: true,
+      email: true,
+      needPasswordChange: true,
+      role: true,
+      status: true,
+      profile: {
+        select: {
+          name: true,
+          age: true,
+          phone: true,
+          gender: true,
+        },
+      },
+    },
+  });
 
-//   let profileInfo;
+  return myprofileInfo;
+};
 
-//   if (userInfo.role === UserRole.SUPER_ADMIN) {
-//     profileInfo = await prisma.admin.findUnique({
-//       where: {
-//         email: userInfo.email,
-//       },
-//     });
-//   } else if (userInfo.role === UserRole.ADMIN) {
-//     profileInfo = await prisma.admin.findUnique({
-//       where: {
-//         email: userInfo.email,
-//       },
-//     });
-//   } else if (userInfo.role === UserRole.DOCTOR) {
-//     profileInfo = await prisma.doctor.findUnique({
-//       where: {
-//         email: userInfo.email,
-//       },
-//     });
-//   } else if (userInfo.role === UserRole.PATIENT) {
-//     profileInfo = await prisma.patient.findUnique({
-//       where: {
-//         email: userInfo.email,
-//       },
-//     });
-//   }
+const updateMyProfile = async (
+  user: IAuthUser,
+  payload: any
+): Promise<User> => {
+  const { profile, ...userData } = payload;
 
-//   return { ...userInfo, ...profileInfo };
-// };
+  const existingUser = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+      status: UserStatus.ACTIVE,
+    },
+    include: {
+      profile: true,
+    },
+  });
 
-// const updateMyProfile = async (user: IAuthUser, req: Request) => {
-//   const userInfo = await prisma.user.findUniqueOrThrow({
-//     where: {
-//       email: user?.email,
-//       status: UserStatus.ACTIVE,
-//     },
-//   });
+  const result = await prisma.$transaction(async (txClient) => {
+    const { email, role, password, ...safeUserData } = userData;
 
-//   const file = req.file as IFile;
+    const updateUserData = await txClient.user.update({
+      where: { email: existingUser.email },
+      data: safeUserData,
+    });
 
-//   if (file) {
-//     const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-//     req.body.profilePhoto = uploadToCloudinary?.secure_url;
-//   }
+    const profileUpdatePayload = {
+      name: payload.profile.name ?? existingUser.profile?.name,
+      age: payload.profile.age ?? existingUser.profile?.age,
+      phone: payload.profile.phone ?? existingUser.profile?.phone,
+      gender: payload.profile.gender ?? existingUser.profile?.gender,
+    };
 
-//   let profileInfo;
+    await txClient.profile.update({
+      where: {
+        userId: updateUserData.id,
+      },
+      data: profileUpdatePayload,
+    });
 
-//   if (userInfo.role === UserRole.SUPER_ADMIN) {
-//     profileInfo = await prisma.admin.update({
-//       where: {
-//         email: userInfo.email,
-//       },
-//       data: req.body,
-//     });
-//   } else if (userInfo.role === UserRole.ADMIN) {
-//     profileInfo = await prisma.admin.update({
-//       where: {
-//         email: userInfo.email,
-//       },
-//       data: req.body,
-//     });
-//   } else if (userInfo.role === UserRole.DOCTOR) {
-//     profileInfo = await prisma.doctor.update({
-//       where: {
-//         email: userInfo.email,
-//       },
-//       data: req.body,
-//     });
-//   } else if (userInfo.role === UserRole.PATIENT) {
-//     profileInfo = await prisma.patient.update({
-//       where: {
-//         email: userInfo.email,
-//       },
-//       data: req.body,
-//     });
-//   }
+    const updatedUser = await txClient.user.findUniqueOrThrow({
+      where: { email: user?.email },
+      include: {
+        profile: true,
+      },
+    });
 
-//   return { ...profileInfo };
-// };
+    return updatedUser;
+  });
+
+  return result;
+};
 
 export const UserService = {
   createUser,
+  createTrainer,
   getAllUser,
   updateUserStatus,
-  //   getMyProfile,
-  //   updateMyProfile,
+  getMyProfile,
+  updateMyProfile,
 };
