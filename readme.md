@@ -474,6 +474,15 @@ npm run dev
 
 Server will be running at: http://localhost:5000
 
-```
+🌐 Live Hosting Link
+Your project is deployed and live at:
 
-```
+🔗 https://gym-class-scheduling-and-membership-ten.vercel.app/
+
+✅ Hosted on Vercel – Fast, secure, and reliable deployment platform.
+
+📬 Postman Documentation
+Postman Collection:
+🔗 View Full API Documentation
+
+This collection includes all available endpoints for authentication, user management, schedule creation, and booking management in the Gym Class Scheduling and Membership Management System.
