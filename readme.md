@@ -54,23 +54,20 @@ View the full ERD (Entity Relationship Diagram) here:
 - **CORS**
 - **dotenv** – Environment variable handling
 
-## 📱 API Endpoints Documentation
+## 📘 API Endpoints Documentation
 
-All API endpoints follow RESTful conventions and return consistent JSON structures with `success`, `statusCode`, `message`, and `data` fields.
+### 🔐 Auth Routes
 
----
+#### POST `/api/v1/auth/login`
 
-### 🔐 POST /api/auth/login
-
-**Description:**
-Authenticate a user and return access and refresh tokens.
+**Description:** Login a user
 
 **Request Body:**
 
 ```json
 {
-  "email": "user@example.com",
-  "password": "yourpassword"
+  "email": "admin@gmail.com",
+  "password": "123456"
 }
 ```
 
@@ -80,15 +77,10 @@ Authenticate a user and return access and refresh tokens.
 {
   "success": true,
   "statusCode": 200,
-  "message": "User logged in successfully!",
+  "message": "Logged in successfully",
   "data": {
-    "accessToken": "JWT_TOKEN",
-    "refreshToken": "REFRESH_TOKEN",
-    "user": {
-      "id": "uuid",
-      "email": "user@example.com",
-      "role": "ADMIN"
-    }
+    "accessToken": "...",
+    "needPasswordChange": true
   }
 }
 ```
@@ -98,21 +90,13 @@ Authenticate a user and return access and refresh tokens.
 ```json
 {
   "success": false,
-  "statusCode": 401,
   "message": "Invalid email or password"
 }
 ```
 
----
+#### POST `/api/v1/auth/logout`
 
-### 👥 GET /api/users/\:id
-
-**Description:**
-Retrieve user profile information by ID (Admin Only).
-
-**Path Parameter:**
-
-- `id` (string) — User UUID
+**Description:** Logout a user (clears refresh token)
 
 **Success Response:**
 
@@ -120,29 +104,30 @@ Retrieve user profile information by ID (Admin Only).
 {
   "success": true,
   "statusCode": 200,
-  "message": "User fetched successfully",
-  "data": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "role": "TRAINER",
-    "status": "ACTIVE"
-  }
+  "message": "Logged out successfully"
 }
 ```
 
 ---
 
-### 📅 POST /api/schedules
+### 👤 User Routes
 
-**Description:**
-Create a new gym class schedule (Trainer/Admin).
+#### POST `/api/v1/user/create`
+
+**Description:** Create a user (Trainee)
 
 **Request Body:**
 
 ```json
 {
-  "startDateTime": "2025-06-01T10:00:00Z",
-  "endDateTime": "2025-06-01T11:00:00Z"
+  "email": "st1@gmail.com",
+  "password": "123456789",
+  "profile": {
+    "name": "Student",
+    "age": 45,
+    "phone": "01935795146",
+    "gender": "Male"
+  }
 }
 ```
 
@@ -152,28 +137,119 @@ Create a new gym class schedule (Trainer/Admin).
 {
   "success": true,
   "statusCode": 201,
-  "message": "Schedule created successfully!",
-  "data": {
-    "id": "uuid",
-    "trainerId": "uuid",
-    "startDateTime": "2025-06-01T10:00:00Z",
-    "endDateTime": "2025-06-01T11:00:00Z"
+  "message": "User created successfully",
+  "data": { ... }
+}
+```
+
+#### POST `/api/v1/user/create/trainer`
+
+**Description:** Create a trainer (only Admin allowed)
+
+**Request Body:** Same as above
+
+**Failure Response (Unauthorized):**
+
+```json
+{
+  "success": false,
+  "message": "Unauthorized access"
+}
+```
+
+#### GET `/api/v1/users/me`
+
+**Description:** Get current user profile
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "message": "User profile fetched successfully",
+  "data": { ... }
+}
+```
+
+#### GET `/api/v1/user/all-users`
+
+**Description:** Get all users (only Admin allowed)
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "message": "Users fetched successfully",
+  "data": [ ... ]
+}
+```
+
+#### PATCH `/api/v1/user/update-my-profile`
+
+**Description:** Update own profile (Only Trainee)
+
+**Request Body:**
+
+```json
+{
+  "profile": {
+    "phone": "01945645600"
   }
 }
 ```
 
 ---
 
-### 📝 POST /api/bookings
+### 📅 Schedule Routes
 
-**Description:**
-Book a trainee into a scheduled class.
+#### POST `/api/v1/schedule/create`
+
+**Description:** Create a class schedule (Only Admin)
 
 **Request Body:**
 
 ```json
 {
-  "scheduleId": "uuid"
+  "trainerId": "51e3308b-81dd-4c13-959b-622cc4037d6a",
+  "startDate": "2025-06-01",
+  "endDate": "2025-06-01",
+  "startTime": "20:00"
+}
+```
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "Schedule created successfully",
+  "data": { ... }
+}
+```
+
+#### GET `/api/v1/schedule/my-schedules`
+
+**Description:** Get trainer's own schedules
+
+#### GET `/api/v1/schedule/`
+
+**Description:** Get all schedules (Only Admin)
+
+---
+
+### 📝 Booking Routes
+
+#### POST `/api/v1/booking/book`
+
+**Description:** Book a schedule (Only Trainee)
+
+**Request Body:**
+
+```json
+{
+  "scheduleId": "2102fab5-2007-428b-b3f2-4e214f042993"
 }
 ```
 
@@ -184,47 +260,36 @@ Book a trainee into a scheduled class.
   "success": true,
   "statusCode": 201,
   "message": "Class booked successfully!",
-  "data": {
-    "id": "uuid",
-    "scheduleId": "uuid",
-    "userId": "uuid",
-    "createdAt": "2025-06-01T12:00:00Z"
-  }
+  "data": { ... }
 }
 ```
 
-**Failure Response (class full):**
+**Failure Response (Schedule Full):**
 
 ```json
 {
   "success": false,
-  "statusCode": 400,
   "message": "Class schedule is full. Maximum 10 trainees allowed per schedule."
 }
 ```
 
----
+#### GET `/api/v1/booking/my-bookings`
 
-### ❌ DELETE /api/users/\:id
+**Description:** View upcoming bookings (Only Trainee)
 
-**Description:**
-Soft-delete a user by marking their status as DELETED (Admin Only).
+#### DELETE `/api/v1/booking/:bookingId`
 
-**Path Parameter:**
-
-- `id` (string) — User UUID
+**Description:** Cancel a booking (Only Trainee)
 
 **Success Response:**
 
 ```json
 {
   "success": true,
-  "statusCode": 200,
-  "message": "User deleted successfully.",
-  "data": null
+  "message": "Booking cancelled successfully"
 }
 ```
 
 ---
 
-This documentation includes the major functional endpoints required to operate the Gym Class Scheduling and Membership Management System. For full reference, see the Postman documentation link provided in the README.
+✅ **Note:** All protected routes require JWT Authorization in `Authorization: Bearer <token>` header.
