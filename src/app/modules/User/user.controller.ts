@@ -1,94 +1,57 @@
-// import { Request, Response } from "express";
-// import { UserService } from "./user.service";
-// import catchAsync from "../../../shared/catchAsync";
-// import sendResponse from "../../../shared/sendResponse";
-// import pick from "../../../shared/pick";
-// import httpStatus from "http-status";
-// import { userFilterableField } from "./user.constant";
-// import { IAuthUser } from "../../interfaces/common";
+import { Request, Response } from "express";
+import { UserService } from "./user.service";
+import catchAsync from "../../../shared/catchAsync";
+import sendResponse from "../../../shared/sendResponse";
+import pick from "../../../shared/pick";
+import httpStatus from "http-status";
+import { userFilterableField } from "./user.constant";
 
-// const createAdminIntoDB = async (req: Request, res: Response) => {
-//   try {
-//     const result = await UserService.createAdmin(req);
+const createUserIntoDB = async (req: Request, res: Response) => {
+  try {
+    const result = await UserService.createUser(req.body);
 
-//     res.status(200).json({
-//       success: true,
-//       message: "Admin create successfully",
-//       data: result,
-//     });
-//   } catch (error: any) {
-//     res.status(500).json({
-//       success: false,
-//       message: error?.message || "Something went wrong",
-//       error: error,
-//     });
-//   }
-// };
+    res.status(200).json({
+      success: true,
+      message: "User create successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error?.message || "Something went wrong",
+      error: error,
+    });
+  }
+};
 
-// const createDoctorIntoDB = async (req: Request, res: Response) => {
-//   try {
-//     const result = await UserService.createDoctor(req);
+const getAllUserFromDB = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, userFilterableField);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
 
-//     res.status(200).json({
-//       success: true,
-//       message: "Doctor create successfully",
-//       data: result,
-//     });
-//   } catch (error: any) {
-//     res.status(500).json({
-//       success: false,
-//       message: error?.message || "Something went wrong",
-//       error: error,
-//     });
-//   }
-// };
+  const result = await UserService.getAllUser(filters, options);
 
-// const createPatientIntoDB = async (req: Request, res: Response) => {
-//   try {
-//     const result = await UserService.createPatient(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All users retrives successfully!!!",
+    meta: result.meta,
+    data: result.data,
+  });
+});
 
-//     res.status(200).json({
-//       success: true,
-//       message: "Patient create successfully",
-//       data: result,
-//     });
-//   } catch (error: any) {
-//     res.status(500).json({
-//       success: false,
-//       message: error?.message || "Something went wrong",
-//       error: error,
-//     });
-//   }
-// };
+const updateUserStatusIntoDB = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await UserService.updateUserStatus(id, req.body);
 
-// const getAllUserFromDB = catchAsync(async (req: Request, res: Response) => {
-//   const filters = pick(req.query, userFilterableField);
-//   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-
-//   const result = await UserService.getAllUser(filters, options);
-
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: "All users retrives successfully!!!",
-//     meta: result.meta,
-//     data: result.data,
-//   });
-// });
-
-// const updateUserStatusIntoDB = catchAsync(
-//   async (req: Request, res: Response) => {
-//     const { id } = req.params;
-//     const result = await UserService.updateUserStatus(id, req.body);
-
-//     sendResponse(res, {
-//       statusCode: httpStatus.OK,
-//       success: true,
-//       message: "Users staus updated successfully!!!",
-//       data: result,
-//     });
-//   }
-// );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Users staus updated successfully!!!",
+      data: result,
+    });
+  }
+);
 
 // const getMyProfileFromDB = catchAsync(
 //   async (req: Request & { user?: IAuthUser }, res: Response) => {
@@ -118,12 +81,10 @@
 //   }
 // );
 
-// export const UserControllers = {
-//   createAdminIntoDB,
-//   createDoctorIntoDB,
-//   createPatientIntoDB,
-//   getAllUserFromDB,
-//   updateUserStatusIntoDB,
-//   getMyProfileFromDB,
-//   updateMyProfileIntoDB,
-// };
+export const UserControllers = {
+  createUserIntoDB,
+  getAllUserFromDB,
+  updateUserStatusIntoDB,
+  //   getMyProfileFromDB,
+  //   updateMyProfileIntoDB,
+};
