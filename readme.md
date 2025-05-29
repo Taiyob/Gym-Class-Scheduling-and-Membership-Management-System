@@ -15,50 +15,42 @@ The system enforces booking limits to prevent overbooking and includes secure ro
 - Modular codebase with clear separation of concerns
 - RESTful API design with strong validation (Zod) and error handling
 
-🧩 Relational Diagram
+## 🔗 Relational Diagram
 
-┌────────────────────────────────────────────┐
-│ User │
-├────────────────────────────────────────────┤
-│ id (PK)------------------------------------│
-│ email (Unique)-----------------------------│
-│ password ----------------------------------│
-│ role (Enum: UserRole)----------------------│
-│ needPasswordChange ------------------------│
-│ status (Enum: UserStatus)------------------│
-│ createdAt----------------------------------│
-│ updatedAt----------------------------------│
-├────────────────────────────────────────────┤
-│ 🔗 1-1 → Profile (userId)------------------│
-│ 🔗 1-N → Schedule (trainerId)--------------│
-│ 🔗 1-N → Booking (userId)----------------- │
-└────────────────────────────────────────────┘
+View the full ERD (Entity Relationship Diagram) here:  
+[👉 View Relational Diagram on dbdiagram.io](https://dbdiagram.io/d/6838664dbd74709cb7197be4)
 
-        ▲                  ▲
-        │                  │
-        │                  │
+🛠️ Technology Stack
+This project utilizes a modern TypeScript-based backend technology stack designed for scalability, maintainability, and performance.
 
-┌───────┴───────┐ ┌────┴──────────────────────────────────┐
-│--- Profile--- │ │-------------- Schedule--------------│
-├───────────────┤ ├───────────────────────────────────────┤
-│ id (PK)------ │ │ id (PK)------------------------------ │
-│ userId (FK)---│ │ trainerId (FK → User.id)------------- │
-│ name----------│ │ startDateTime------------------------ │
-│ age-----------│ │ endDateTime-------------------------- │
-│ phone---------│ │ createdAt---------------------------- │
-│ gender--------│ │ updatedAt---------------------------- │
-│ createdAt-----│ ├────────────────────────────────────── ┤
-│ updatedAt-----│ │ 🔗 1-N → Booking (scheduleId)------- │
-└───────────────┘ └──────────────────────────────────────┘
---------------------▲
---------------------│
---------------------│
-┌────────── ┴─────────────┐
-│------- Booking--------- │
-├────────────────────────-┤
-│------- id (PK)----------│
-│---- scheduleId (FK)---- │
-│----- userId (FK)------- │
-│------ createdAt-------- │
-│------ updatedAt-------- │
-└────────────────────────┘
+⚙️ Runtime & Language
+Node.js — JavaScript runtime environment
+
+TypeScript — Strongly-typed JavaScript superset for better code quality
+
+🌐 Server & Framework
+Express.js — Web framework for handling HTTP requests
+
+🧩 ORM & Database
+Prisma — Type-safe ORM for database interaction
+
+PostgreSQL — Relational database system used to store user, schedule, and booking information
+
+🔒 Authentication & Authorization
+jsonwebtoken (JWT) — Secure authentication tokens
+
+Custom Role-Based Access Control — For ADMIN, TRAINER, and TRAINEE roles
+
+📦 Data Validation & Structuring
+Zod — Type-safe schema validation
+
+http-status — Standard HTTP status code messages
+
+🔐 Security & Middleware
+bcrypt — Password hashing
+
+cookie-parser — Parse and manage cookies
+
+cors — Enable CORS for secure API access
+
+dotenv — Environment variable management
