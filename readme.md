@@ -53,3 +53,178 @@ View the full ERD (Entity Relationship Diagram) here:
 - **cookie-parser**
 - **CORS**
 - **dotenv** – Environment variable handling
+
+## 📱 API Endpoints Documentation
+
+All API endpoints follow RESTful conventions and return consistent JSON structures with `success`, `statusCode`, `message`, and `data` fields.
+
+---
+
+### 🔐 POST /api/auth/login
+
+**Description:**
+Authenticate a user and return access and refresh tokens.
+
+**Request Body:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "yourpassword"
+}
+```
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "User logged in successfully!",
+  "data": {
+    "accessToken": "JWT_TOKEN",
+    "refreshToken": "REFRESH_TOKEN",
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "role": "ADMIN"
+    }
+  }
+}
+```
+
+**Failure Response:**
+
+```json
+{
+  "success": false,
+  "statusCode": 401,
+  "message": "Invalid email or password"
+}
+```
+
+---
+
+### 👥 GET /api/users/\:id
+
+**Description:**
+Retrieve user profile information by ID (Admin Only).
+
+**Path Parameter:**
+
+- `id` (string) — User UUID
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "User fetched successfully",
+  "data": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "role": "TRAINER",
+    "status": "ACTIVE"
+  }
+}
+```
+
+---
+
+### 📅 POST /api/schedules
+
+**Description:**
+Create a new gym class schedule (Trainer/Admin).
+
+**Request Body:**
+
+```json
+{
+  "startDateTime": "2025-06-01T10:00:00Z",
+  "endDateTime": "2025-06-01T11:00:00Z"
+}
+```
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "Schedule created successfully!",
+  "data": {
+    "id": "uuid",
+    "trainerId": "uuid",
+    "startDateTime": "2025-06-01T10:00:00Z",
+    "endDateTime": "2025-06-01T11:00:00Z"
+  }
+}
+```
+
+---
+
+### 📝 POST /api/bookings
+
+**Description:**
+Book a trainee into a scheduled class.
+
+**Request Body:**
+
+```json
+{
+  "scheduleId": "uuid"
+}
+```
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "Class booked successfully!",
+  "data": {
+    "id": "uuid",
+    "scheduleId": "uuid",
+    "userId": "uuid",
+    "createdAt": "2025-06-01T12:00:00Z"
+  }
+}
+```
+
+**Failure Response (class full):**
+
+```json
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Class schedule is full. Maximum 10 trainees allowed per schedule."
+}
+```
+
+---
+
+### ❌ DELETE /api/users/\:id
+
+**Description:**
+Soft-delete a user by marking their status as DELETED (Admin Only).
+
+**Path Parameter:**
+
+- `id` (string) — User UUID
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "User deleted successfully.",
+  "data": null
+}
+```
+
+---
+
+This documentation includes the major functional endpoints required to operate the Gym Class Scheduling and Membership Management System. For full reference, see the Postman documentation link provided in the README.
