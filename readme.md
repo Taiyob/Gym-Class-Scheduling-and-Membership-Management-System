@@ -299,104 +299,118 @@ The application uses PostgreSQL and Prisma ORM to define and manage the database
 
 <details> <summary><strong>📘 Click to view full Prisma schema</strong></summary>
 
-// Prisma Client Generator
+```prisma
+// ✅ Prisma Client Generator
 generator client {
-provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
-// PostgreSQL Database Source
+// ✅ PostgreSQL Data Source
 datasource db {
-provider = "postgresql"
-url = env("DATABASE_URL")
-directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
+```
 
-//////////////////////////
-// 📌 Model Definitions //
-//////////////////////////
+### 👤 User Model
 
+```prisma
 model User {
-id String @id @default(uuid())
-email String @unique
-password String
-role UserRole
-needPasswordChange Boolean @default(true)
-status UserStatus @default(ACTIVE)
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  password           String
+  role               UserRole
+  needPasswordChange Boolean    @default(true)
+  status             UserStatus @default(ACTIVE)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
-// Relations
-profile Profile?
-schedule Schedule[] @relation("TrainerSchedules")
-booking Booking[]
+  // Relations
+  profile  Profile?
+  schedule Schedule[] @relation("TrainerSchedules")
+  booking  Booking[]
 
-@@map("users")
+  @@map("users")
 }
+```
 
+### 🧍 Profile Model
+
+```prisma
 model Profile {
-id String @id @default(uuid())
-userId String @unique
-name String
-age Int?
-phone String?
-gender Gender @default(Male)
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  name      String
+  age       Int?
+  phone     String?
+  gender    Gender  @default(Male)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-// Relations
-user User @relation(fields: [userId], references: [id])
+  // Relations
+  user User @relation(fields: [userId], references: [id])
 
-@@map("profiles")
+  @@map("profiles")
 }
+```
 
+### 🗓️ Schedule Model
+
+```prisma
 model Schedule {
-id String @id @default(uuid())
-trainerId String
-startDateTime DateTime
-endDateTime DateTime
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  trainerId     String
+  startDateTime DateTime
+  endDateTime   DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-// Relations
-trainer User @relation("TrainerSchedules", fields: [trainerId], references: [id])
-booking Booking[]
+  // Relations
+  trainer  User      @relation("TrainerSchedules", fields: [trainerId], references: [id])
+  booking  Booking[]
 
-@@map("schedules")
+  @@map("schedules")
 }
+```
 
+### 📆 Booking Model
+
+```prisma
 model Booking {
-id String @id @default(uuid())
-scheduleId String
-userId String
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  id         String @id @default(uuid())
+  scheduleId String
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-// Relations
-schedule Schedule @relation(fields: [scheduleId], references: [id])
-user User @relation(fields: [userId], references: [id])
+  // Relations
+  schedule Schedule @relation(fields: [scheduleId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
 
-@@unique([scheduleId, userId])
-@@map("bookings")
+  @@unique([scheduleId, userId])
+  @@map("bookings")
 }
+```
 
-//////////////////////
-// 🔘 Enum Types //
-//////////////////////
+### 🔘 Enums
 
+```prisma
 enum UserRole {
-SUPER_ADMIN
-ADMIN
-TRAINER
-TRAINEE
+  SUPER_ADMIN
+  ADMIN
+  TRAINER
+  TRAINEE
 }
 
 enum UserStatus {
-ACTIVE
-BLOCKED
-DELETED
+  ACTIVE
+  BLOCKED
+  DELETED
 }
 
 enum Gender {
-Male
-Female
+  Male
+  Female
 }
+```
