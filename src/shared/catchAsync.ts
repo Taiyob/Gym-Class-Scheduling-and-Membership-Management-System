@@ -11,5 +11,3 @@ const catchAsync = (fn: RequestHandler) => {
 };
 
 export default catchAsync;
-
-// 61 no module er 2 no vedio te ei function niaa bolse

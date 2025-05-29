@@ -23,6 +23,3 @@ const sendResponse = <T>(
 };
 
 export default sendResponse;
-
-// Composer install Laravel
-// https://sites.google.com/view/phpstorm-license-server

@@ -13,7 +13,8 @@ const auth = (...role: string[]) => {
       if (!token) {
         throw new CustomApiError(
           httpStatus.UNAUTHORIZED,
-          "Please login with your correct credentials!!!"
+          "Unauthorized access.",
+          "You must be an admin to perform this action."
         );
       }
 

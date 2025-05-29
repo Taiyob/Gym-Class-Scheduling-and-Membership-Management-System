@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
+import CustomApiError from "../errors/customApiError";
 
 const globalErrorHandler = (
   error: any,
@@ -8,25 +9,39 @@ const globalErrorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  let statusCoed = httpStatus.INTERNAL_SERVER_ERROR;
-  let success = false;
+  let statusCode: number = httpStatus.INTERNAL_SERVER_ERROR;
   let message = error?.message || "Something went wrong";
-  let err = error;
+  let errorDetails: any = error;
 
-  if (error instanceof Prisma.PrismaClientValidationError) {
-    message = "Validation Error";
-    err = error.message;
-  } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  // Handle CustomApiError
+  if (error instanceof CustomApiError) {
+    statusCode = error.statusCode;
+    errorDetails = error.stack || error.message;
+  }
+
+  // Prisma Validation Error
+  else if (error instanceof Prisma.PrismaClientValidationError) {
+    statusCode = httpStatus.BAD_REQUEST;
+    message = "Validation error occurred.";
+    errorDetails = {
+      message: error.message,
+    };
+  }
+
+  // Prisma Unique Constraint Violation
+  else if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2002") {
-      message = "Dupliacte key error";
-      err = error.meta;
+      statusCode = httpStatus.CONFLICT;
+      message = "Duplicate key error.";
+      errorDetails = error.meta;
     }
   }
 
-  res.status(statusCoed).json({
-    success: success,
-    message: message,
-    error: err,
+  // Final structured response
+  res.status(statusCode).json({
+    success: false,
+    message,
+    errorDetails,
   });
 };
 
