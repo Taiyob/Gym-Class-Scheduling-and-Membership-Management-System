@@ -20,37 +20,36 @@ The system enforces booking limits to prevent overbooking and includes secure ro
 View the full ERD (Entity Relationship Diagram) here:  
 [👉 View Relational Diagram on dbdiagram.io](https://dbdiagram.io/d/6838664dbd74709cb7197be4)
 
-🛠️ Technology Stack
-This project utilizes a modern TypeScript-based backend technology stack designed for scalability, maintainability, and performance.
+## 🛠️ Technology Stack
 
-⚙️ Runtime & Language
-Node.js — JavaScript runtime environment
+### Language & Runtime
 
-TypeScript — Strongly-typed JavaScript superset for better code quality
+- **TypeScript**
+- **Node.js**
 
-🌐 Server & Framework
-Express.js — Web framework for handling HTTP requests
+### Framework & Server
 
-🧩 ORM & Database
-Prisma — Type-safe ORM for database interaction
+- **Express.js**
 
-PostgreSQL — Relational database system used to store user, schedule, and booking information
+### Database & ORM
 
-🔒 Authentication & Authorization
-jsonwebtoken (JWT) — Secure authentication tokens
+- **PostgreSQL**
+- **Prisma ORM**
 
-Custom Role-Based Access Control — For ADMIN, TRAINER, and TRAINEE roles
+### Authentication & Authorization
 
-📦 Data Validation & Structuring
-Zod — Type-safe schema validation
+- **JWT (JSON Web Token)**
+- **Role-Based Access Control** (ADMIN | TRAINER | TRAINEE)
 
-http-status — Standard HTTP status code messages
+### Validation & Utilities
 
-🔐 Security & Middleware
-bcrypt — Password hashing
+- **Zod** – Schema validation
+- **UUID** – Unique identifier
+- **date-fns** – Date formatting helper
 
-cookie-parser — Parse and manage cookies
+### Security & Middleware
 
-cors — Enable CORS for secure API access
-
-dotenv — Environment variable management
+- **bcrypt** – Password hashing
+- **cookie-parser**
+- **CORS**
+- **dotenv** – Environment variable handling
