@@ -15,27 +15,18 @@ route.post(
 
 route.post(
   "/create/trainer",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  auth(UserRole.ADMIN),
   validateRequest(UserValidation.createUser),
   UserControllers.createTrainerIntoDB
 );
 
 route.get(
   "/me",
-  auth(
-    UserRole.SUPER_ADMIN,
-    UserRole.ADMIN,
-    UserRole.TRAINEE,
-    UserRole.TRAINER
-  ),
+  auth(UserRole.ADMIN, UserRole.TRAINEE, UserRole.TRAINER),
   UserControllers.getMyProfileFromDB
 );
 
-route.get(
-  "/all-users",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  UserControllers.getAllUserFromDB
-);
+route.get("/all-users", auth(UserRole.ADMIN), UserControllers.getAllUserFromDB);
 
 route.patch(
   "/update-my-profile",
