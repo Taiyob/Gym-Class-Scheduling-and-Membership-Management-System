@@ -1,4 +1,4 @@
-import { Prisma, Schedule } from "@prisma/client";
+import { Prisma, Schedule, UserRole, UserStatus } from "@prisma/client";
 import prisma from "../../../shared/prisma";
 import { addHours, addMinutes, format } from "date-fns";
 import { ISchedule, IScheduleFilterRequest } from "./schedule.interface";
@@ -13,78 +13,86 @@ import httpStatus from "http-status";
 //   return new Date(date.getTime() + offset);
 // };
 
-const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
-  const { startDate, startTime, endDate, endTime, trainerId } = payload;
+// const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
+//   const { startDate, startTime, endDate, endTime, trainerId } = payload;
 
-  if (!trainerId) {
-    throw new CustomApiError(httpStatus.BAD_REQUEST, "Trainer ID is required!");
-  }
+//   if (!trainerId) {
+//     throw new CustomApiError(httpStatus.BAD_REQUEST, "Trainer ID is required!");
+//   }
 
-  const intervalTime = 30;
-  const schedules = [];
+//   await prisma.user.findUniqueOrThrow({
+//     where: {
+//       id: trainerId,
+//       role: UserRole.TRAINER,
+//       status: UserStatus.ACTIVE,
+//     },
+//   });
 
-  const currentDate = new Date(startDate);
-  const lastDate = new Date(endDate);
+//   const intervalTime = 30;
+//   const schedules = [];
 
-  while (currentDate <= lastDate) {
-    const startDateTime = new Date(
-      addMinutes(
-        addHours(
-          `${format(currentDate, "yyyy-MM-dd")}`,
-          Number(startTime.split(":")[0])
-        ),
-        Number(startTime.split(":")[1])
-      )
-    );
+//   const currentDate = new Date(startDate);
+//   const lastDate = new Date(endDate);
 
-    const endDateTime = new Date(
-      addMinutes(
-        addHours(
-          `${format(currentDate, "yyyy-MM-dd")}`,
-          Number(endTime.split(":")[0])
-        ),
-        Number(endTime.split(":")[1])
-      )
-    );
+//   while (currentDate <= lastDate) {
+//     const startDateTime = new Date(
+//       addMinutes(
+//         addHours(
+//           `${format(currentDate, "yyyy-MM-dd")}`,
+//           Number(startTime.split(":")[0])
+//         ),
+//         Number(startTime.split(":")[1])
+//       )
+//     );
 
-    while (startDateTime < endDateTime) {
-      const scheduleDate = {
-        startDateTime: startDateTime,
-        endDateTime: addMinutes(startDateTime, intervalTime),
-        trainerId,
-      };
+//     const endDateTime = new Date(
+//       addMinutes(
+//         addHours(
+//           `${format(currentDate, "yyyy-MM-dd")}`,
+//           Number(endTime.split(":")[0])
+//         ),
+//         Number(endTime.split(":")[1])
+//       )
+//     );
 
-      //   const s = await convertDateTime(startDateTime);
-      //   const e = await convertDateTime(addMinutes(startDateTime, intervalTime));
+//     while (startDateTime < endDateTime) {
+//       const scheduleDate = {
+//         startDateTime: startDateTime,
+//         endDateTime: addMinutes(startDateTime, intervalTime),
+//         trainerId,
+//       };
 
-      //   const scheduleDate = {
-      //     startDateTime: s,
-      //     endDateTime: e,
-      //   };
+//       //   const s = await convertDateTime(startDateTime);
+//       //   const e = await convertDateTime(addMinutes(startDateTime, intervalTime));
 
-      const existingSchedule = await prisma.schedule.findFirst({
-        where: {
-          startDateTime: scheduleDate.startDateTime,
-          endDateTime: scheduleDate.endDateTime,
-          trainerId: trainerId,
-        },
-      });
+//       //   const scheduleDate = {
+//       //     startDateTime: s,
+//       //     endDateTime: e,
+//       //   };
 
-      if (!existingSchedule) {
-        const result = await prisma.schedule.create({
-          data: scheduleDate,
-        });
+//       const existingSchedule = await prisma.schedule.findFirst({
+//         where: {
+//           startDateTime: scheduleDate.startDateTime,
+//           endDateTime: scheduleDate.endDateTime,
+//           trainerId: trainerId,
+//         },
+//       });
 
-        schedules.push(result);
-      }
+//       if (!existingSchedule) {
+//         const result = await prisma.schedule.create({
+//           data: scheduleDate,
+//         });
 
-      startDateTime.setMinutes(startDateTime.getMinutes() + intervalTime);
-    }
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
+//         schedules.push(result);
+//       }
 
-  return schedules;
-};
+//       startDateTime.setMinutes(startDateTime.getMinutes() + intervalTime);
+//     }
+//     currentDate.setDate(currentDate.getDate() + 1);
+//   }
+
+//   return schedules;
+// };
 
 // const getAllSchedule = async (
 //   params: IScheduleFilterRequest,
@@ -189,6 +197,90 @@ const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
 //     data: result,
 //   };
 // };
+
+const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
+  const { startDate, endDate, startTime, trainerId } = payload;
+
+  if (!trainerId) {
+    throw new CustomApiError(httpStatus.BAD_REQUEST, "Trainer ID is required!");
+  }
+
+  // ✅ Trainer existence check
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      id: trainerId,
+      role: UserRole.TRAINER,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const schedules: Schedule[] = [];
+  const currentDate = new Date(startDate);
+  const lastDate = new Date(endDate);
+
+  while (currentDate <= lastDate) {
+    // Format day for display
+    const formattedDate = format(currentDate, "yyyy-MM-dd");
+
+    // ✅ Count existing schedules for the day
+    const existingSchedulesCount = await prisma.schedule.count({
+      where: {
+        trainerId,
+        startDateTime: {
+          gte: new Date(`${formattedDate}T00:00:00.000Z`),
+          lt: new Date(`${formattedDate}T23:59:59.999Z`),
+        },
+      },
+    });
+
+    if (existingSchedulesCount >= 5) {
+      throw new CustomApiError(
+        httpStatus.BAD_REQUEST,
+        `Cannot create more than 5 schedules on ${formattedDate}`
+      );
+    }
+
+    // ✅ Build start & end time
+    const [hour, minute] = startTime.split(":").map(Number);
+    const startDateTime = new Date(currentDate);
+    startDateTime.setHours(hour, minute, 0, 0);
+
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setHours(startDateTime.getHours() + 2); // 2 hours class
+
+    // ✅ Check for time overlap
+    const overlapSchedule = await prisma.schedule.findFirst({
+      where: {
+        trainerId,
+        startDateTime: { lt: endDateTime },
+        endDateTime: { gt: startDateTime },
+      },
+    });
+
+    if (overlapSchedule) {
+      throw new CustomApiError(
+        httpStatus.CONFLICT,
+        `Schedule conflict detected on ${formattedDate} from ${startTime}.`
+      );
+    }
+
+    // ✅ Create schedule if no overlap
+    const createdSchedule = await prisma.schedule.create({
+      data: {
+        trainerId,
+        startDateTime,
+        endDateTime,
+      },
+    });
+
+    schedules.push(createdSchedule);
+
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return schedules;
+};
 
 const getSingleScheduleById = async (id: string): Promise<Schedule | null> => {
   const result = await prisma.schedule.findUniqueOrThrow({

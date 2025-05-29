@@ -1,11 +1,76 @@
-1. Patient jokon pay kortese, tokon invoice er maddhome ekta mail pathano
-2. Apointment korle: 1. shate shate mail notification, je se apoointment nise  (eigolar jonno node corn ba cron job use kora jai, orthat ei package diye schedule kora je apoointment er 30 min age mail jabe)
-                     2. appointment er 30 min age take mail er maddhome notification pathano (eigolar jonno node corn ba cron job use kora jai, orthat ei package diye schedule kora je apoointment er 30 min age mail jabe)
+const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
+  const { startDate, endDate, startTime, trainerId } = payload;
 
+  if (!trainerId) {
+    throw new CustomApiError(httpStatus.BAD_REQUEST, "Trainer ID is required!");
+  }
 
+  // Trainer existence check
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      id: trainerId,
+      role: UserRole.TRAINER,
+      status: UserStatus.ACTIVE,
+    },
+  });
 
+  const schedules = [];
+  const currentDate = new Date(startDate);
+  const lastDate = new Date(endDate);
 
+  while (currentDate <= lastDate) {
+    // Format the day (e.g., 2025-05-29)
+    const formattedDate = format(currentDate, "yyyy-MM-dd");
 
-            Suggestions:
-            ER-Diagrame banano(besi besi practice)
-            Raw Query(For SQL, POSTGreSQL): Fuctional Dependency, Tgigger toiri kora, advance query         
+    // Count already scheduled classes for that day
+    const existingSchedulesCount = await prisma.schedule.count({
+      where: {
+        startDateTime: {
+          gte: new Date(`${formattedDate}T00:00:00.000Z`),
+          lt: new Date(`${formattedDate}T23:59:59.999Z`),
+        },
+      },
+    });
+
+    if (existingSchedulesCount >= 5) {
+      throw new CustomApiError(
+        httpStatus.BAD_REQUEST,
+        `Cannot create more than 5 schedules on ${formattedDate}`
+      );
+    }
+
+    // Calculate start and end datetime for 2-hour class
+    const [hour, minute] = startTime.split(":").map(Number);
+    const startDateTime = new Date(currentDate);
+    startDateTime.setHours(hour, minute, 0, 0);
+
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setHours(startDateTime.getHours() + 2);
+
+    // Check for overlap or existing schedule
+    const overlapSchedule = await prisma.schedule.findFirst({
+      where: {
+        startDateTime,
+        endDateTime,
+        trainerId,
+      },
+    });
+
+    if (!overlapSchedule) {
+      const createdSchedule = await prisma.schedule.create({
+        data: {
+          trainerId,
+          startDateTime,
+          endDateTime,
+        },
+      });
+
+      schedules.push(createdSchedule);
+    }
+
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return schedules;
+};
