@@ -69,7 +69,7 @@ Follow these steps to run the project in your local environment:
 ### 📁 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
+git clone https://github.com/Taiyob/Gym-Class-Scheduling-and-Membership-Management-System.git
 cd your-repo-name
 ```
 
@@ -88,7 +88,8 @@ Create a `.env` file in the root directory and add:
 ```env
 DATABASE_URL=your_postgresql_database_url
 DIRECT_URL=your_postgresql_direct_url
-JWT_SECRET=your_secure_jwt_secret
+ACCESS_SECRET=your_secure_jwt_access_secret
+REFRESH_SECRET=your_secure_jwt_referesh_secret
 ```
 
 💡 You can use free PostgreSQL services like **Railway**, **Render**, or **Supabase**.
@@ -269,10 +270,6 @@ enum Gender {
 
 </details>
 
-## 📄 License
-
-This project is licensed under the MIT License.
-
 ---
 
 ```markdown
@@ -307,7 +304,7 @@ Password: 123456
 #### 2. 👨‍🏫 Create Trainer
 
 - Endpoint: `POST /api/v1/user/create/trainer`
-- Headers: `Authorization: Bearer <admin_token>`
+- Headers: `Authorization: <admin_token>`
 - Body:
 
   ```json
@@ -323,7 +320,7 @@ Password: 123456
 #### 3. 🗓️ Create Class Schedule
 
 - Endpoint: `POST /api/v1/schedule/create`
-- Headers: `Authorization: Bearer <admin_token>`
+- Headers: `Authorization: <admin_token>`
 - Body:
 
   ```json
@@ -353,7 +350,7 @@ Password: 123456
 
 - Login with trainee credentials and get a JWT token.
 - Endpoint: `POST /api/v1/booking/book`
-- Headers: `Authorization: Bearer <trainee_token>`
+- Headers: `Authorization: <trainee_token>`
 - Body:
 
   ```json
