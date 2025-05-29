@@ -51,7 +51,8 @@ const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
     if (existingSchedulesCount >= 5) {
       throw new CustomApiError(
         httpStatus.BAD_REQUEST,
-        `Cannot create more than 5 schedules on ${formattedDate}`
+        // `Cannot create more than 5 schedules on ${formattedDate}`
+        "Schedule limit exceeded. Maximum 5 classes are allowed per day."
       );
     }
 
@@ -117,10 +118,20 @@ const getTrainerSchedules = async (user: IAuthUser): Promise<Schedule[]> => {
   return schedules;
 };
 
-const getAllSchedules = async (filters: {
-  date?: string;
-  trainerId?: string;
-}): Promise<Schedule[]> => {
+const getAllSchedules = async (
+  filters: {
+    date?: string;
+    trainerId?: string;
+  },
+  user: IAuthUser
+): Promise<Schedule[]> => {
+  const userChk = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+      role: UserRole.ADMIN,
+    },
+  });
+
   const conditions: any = {};
 
   if (filters.date) {

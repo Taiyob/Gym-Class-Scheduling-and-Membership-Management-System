@@ -14,7 +14,7 @@ const auth = (...role: string[]) => {
         throw new CustomApiError(
           httpStatus.UNAUTHORIZED,
           "Unauthorized access.",
-          "You must be an admin to perform this action."
+          "You must be logged in to access this route."
         );
       }
 
@@ -22,12 +22,13 @@ const auth = (...role: string[]) => {
         token,
         config.jwt.access_secret as Secret
       );
-      req.user = decodedTokenInfo; // now this decodedTokenInfo will go to controller where we use this auth
+      req.user = decodedTokenInfo;
 
       if (role.length && !role.includes(decodedTokenInfo.role)) {
         throw new CustomApiError(
-          httpStatus.PRECONDITION_FAILED,
-          "You are not permitted for this work!!!"
+          httpStatus.FORBIDDEN,
+          "Unauthorized access.",
+          `You must be a ${role.join(" or ")} to perform this action.`
         );
       }
 

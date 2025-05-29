@@ -31,20 +31,26 @@ const getMySchedules = catchAsync(
   }
 );
 
-const getAllSchedules = catchAsync(async (req: Request, res: Response) => {
-  const { date, trainerId } = req.query;
-  const result = await ScheduleService.getAllSchedules({
-    date: date as string,
-    trainerId: trainerId as string,
-  });
+const getAllSchedules = catchAsync(
+  async (req: Request & { user?: IAuthUser }, res: Response) => {
+    const { date, trainerId } = req.query;
+    const user = req.user;
+    const result = await ScheduleService.getAllSchedules(
+      {
+        date: date as string,
+        trainerId: trainerId as string,
+      },
+      user as IAuthUser
+    );
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "All schedules fetched successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "All schedules fetched successfully",
+      data: result,
+    });
+  }
+);
 
 // const getAllScheduleFromDB = catchAsync(
 //   async (

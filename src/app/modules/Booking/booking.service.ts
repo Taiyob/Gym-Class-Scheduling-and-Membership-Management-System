@@ -35,7 +35,7 @@ const bookSchedule = async (
   if (bookingCount >= 10) {
     throw new CustomApiError(
       httpStatus.BAD_REQUEST,
-      "This class is full. Maximum 10 bookings allowed."
+      "Class schedule is full. Maximum 10 trainees allowed per schedule."
     );
   }
 
