@@ -126,6 +126,14 @@ Visit the server at: [http://localhost:5000](http://localhost:5000)
 
 📬 **Postman API Docs:**
 [Postman Collection](https://documenter.getpostman.com/view/9409293/2sB2qfAf4h)
+Note: The Postman collection already includes an environment variable named Live-Link.
+Once the user opens the environment settings in Postman, they will see:
+
+Variable Name: Live-Link
+
+Initial Value: https://gym-class-scheduling-and-membership-ten.vercel.app/api/v1
+
+This variable is automatically used as the base URL for all API requests in the collection.
 
 ---
 
