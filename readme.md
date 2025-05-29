@@ -414,3 +414,9 @@ enum Gender {
   Female
 }
 ```
+
+🔐 Admin Credentials
+Use the following credentials to access the system as an Admin:
+
+Email : admin@gmail.com  
+Password : 123456
