@@ -11,4 +11,12 @@ route.post(
   ScheduleController.createScheduleIntoDB
 );
 
+route.get(
+  "/my-schedules",
+  auth(UserRole.TRAINER),
+  ScheduleController.getMySchedules
+);
+
+route.get("/", auth(UserRole.ADMIN), ScheduleController.getAllSchedules);
+
 export const ScheduleRoute = route;

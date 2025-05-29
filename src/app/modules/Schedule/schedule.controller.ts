@@ -19,6 +19,34 @@ const createScheduleIntoDB = catchAsync(
   }
 );
 
+const getMySchedules = catchAsync(
+  async (req: Request & { user?: IAuthUser }, res: Response) => {
+    const user = req.user;
+    const result = await ScheduleService.getTrainerSchedules(user as IAuthUser);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Trainer schedules fetched successfully",
+      data: result,
+    });
+  }
+);
+
+const getAllSchedules = catchAsync(async (req: Request, res: Response) => {
+  const { date, trainerId } = req.query;
+  const result = await ScheduleService.getAllSchedules({
+    date: date as string,
+    trainerId: trainerId as string,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All schedules fetched successfully",
+    data: result,
+  });
+});
+
 // const getAllScheduleFromDB = catchAsync(
 //   async (
 //     req: Request & { user?: IAuthUser },
@@ -76,6 +104,8 @@ const deleteScheduleByIdFromDB = catchAsync(
 
 export const ScheduleController = {
   createScheduleIntoDB,
+  getMySchedules,
+  getAllSchedules,
   //getAllScheduleFromDB,
   getSingleScheduleByIdFromDB,
   deleteScheduleByIdFromDB,

@@ -205,7 +205,7 @@ const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
     throw new CustomApiError(httpStatus.BAD_REQUEST, "Trainer ID is required!");
   }
 
-  // ✅ Trainer existence check
+  // Trainer existence check
   await prisma.user.findUniqueOrThrow({
     where: {
       id: trainerId,
@@ -222,7 +222,7 @@ const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
     // Format day for display
     const formattedDate = format(currentDate, "yyyy-MM-dd");
 
-    // ✅ Count existing schedules for the day
+    // Count existing schedules for the day
     const existingSchedulesCount = await prisma.schedule.count({
       where: {
         trainerId,
@@ -240,15 +240,15 @@ const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
       );
     }
 
-    // ✅ Build start & end time
+    // Build start & end time
     const [hour, minute] = startTime.split(":").map(Number);
     const startDateTime = new Date(currentDate);
     startDateTime.setHours(hour, minute, 0, 0);
 
     const endDateTime = new Date(startDateTime);
-    endDateTime.setHours(startDateTime.getHours() + 2); // 2 hours class
+    endDateTime.setHours(startDateTime.getHours() + 2);
 
-    // ✅ Check for time overlap
+    // Check for time overlap
     const overlapSchedule = await prisma.schedule.findFirst({
       where: {
         trainerId,
@@ -264,7 +264,7 @@ const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
       );
     }
 
-    // ✅ Create schedule if no overlap
+    // Create schedule if no overlap
     const createdSchedule = await prisma.schedule.create({
       data: {
         trainerId,
@@ -278,6 +278,55 @@ const createSchedule = async (payload: ISchedule): Promise<Schedule[]> => {
     // Move to next day
     currentDate.setDate(currentDate.getDate() + 1);
   }
+
+  return schedules;
+};
+
+const getTrainerSchedules = async (user: IAuthUser): Promise<Schedule[]> => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+      role: UserRole.TRAINER,
+    },
+  });
+
+  const schedules = await prisma.schedule.findMany({
+    where: {
+      trainerId: userData.id,
+    },
+    orderBy: {
+      startDateTime: "asc",
+    },
+  });
+
+  return schedules;
+};
+
+const getAllSchedules = async (filters: {
+  date?: string;
+  trainerId?: string;
+}): Promise<Schedule[]> => {
+  const conditions: any = {};
+
+  if (filters.date) {
+    const startOfDay = new Date(`${filters.date}T00:00:00.000Z`);
+    const endOfDay = new Date(`${filters.date}T23:59:59.999Z`);
+    conditions.startDateTime = {
+      gte: startOfDay,
+      lt: endOfDay,
+    };
+  }
+
+  if (filters.trainerId) {
+    conditions.trainerId = filters.trainerId;
+  }
+
+  const schedules = await prisma.schedule.findMany({
+    where: conditions,
+    orderBy: {
+      startDateTime: "asc",
+    },
+  });
 
   return schedules;
 };
@@ -305,6 +354,8 @@ const deleteScheduleById = async (id: string): Promise<Schedule> => {
 
 export const ScheduleService = {
   createSchedule,
+  getTrainerSchedules,
+  getAllSchedules,
   //getAllSchedule,
   getSingleScheduleById,
   deleteScheduleById,
