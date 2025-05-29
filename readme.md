@@ -293,3 +293,110 @@ View the full ERD (Entity Relationship Diagram) here:
 ---
 
 ✅ **Note:** All protected routes require JWT Authorization in `Authorization: Bearer <token>` header.
+
+🧩 Database Schema
+The application uses PostgreSQL and Prisma ORM to define and manage the database schema. Below is the full model definition used in the schema.prisma file.
+
+<details> <summary><strong>📘 Click to view full Prisma schema</strong></summary>
+
+// Prisma Client Generator
+generator client {
+provider = "prisma-client-js"
+}
+
+// PostgreSQL Database Source
+datasource db {
+provider = "postgresql"
+url = env("DATABASE_URL")
+directUrl = env("DIRECT_URL")
+}
+
+//////////////////////////
+// 📌 Model Definitions //
+//////////////////////////
+
+model User {
+id String @id @default(uuid())
+email String @unique
+password String
+role UserRole
+needPasswordChange Boolean @default(true)
+status UserStatus @default(ACTIVE)
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relations
+profile Profile?
+schedule Schedule[] @relation("TrainerSchedules")
+booking Booking[]
+
+@@map("users")
+}
+
+model Profile {
+id String @id @default(uuid())
+userId String @unique
+name String
+age Int?
+phone String?
+gender Gender @default(Male)
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relations
+user User @relation(fields: [userId], references: [id])
+
+@@map("profiles")
+}
+
+model Schedule {
+id String @id @default(uuid())
+trainerId String
+startDateTime DateTime
+endDateTime DateTime
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relations
+trainer User @relation("TrainerSchedules", fields: [trainerId], references: [id])
+booking Booking[]
+
+@@map("schedules")
+}
+
+model Booking {
+id String @id @default(uuid())
+scheduleId String
+userId String
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relations
+schedule Schedule @relation(fields: [scheduleId], references: [id])
+user User @relation(fields: [userId], references: [id])
+
+@@unique([scheduleId, userId])
+@@map("bookings")
+}
+
+//////////////////////
+// 🔘 Enum Types //
+//////////////////////
+
+enum UserRole {
+SUPER_ADMIN
+ADMIN
+TRAINER
+TRAINEE
+}
+
+enum UserStatus {
+ACTIVE
+BLOCKED
+DELETED
+}
+
+enum Gender {
+Male
+Female
+}
