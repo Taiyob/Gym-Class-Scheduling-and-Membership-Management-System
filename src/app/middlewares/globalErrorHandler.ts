@@ -63,7 +63,7 @@ const globalErrorHandler = (
 ) => {
   let statusCode: number = httpStatus.INTERNAL_SERVER_ERROR;
   let message = error?.message || "Something went wrong";
-  let errorDetails: any = undefined; // Start clean
+  let errorDetails: any = undefined;
 
   // Handle CustomApiError
   if (error instanceof CustomApiError) {
